@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Laboratory Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+        
+        .matrix-bg {
+            background-color: #001233;
+            background-image: 
+                linear-gradient(rgba(0, 18, 51, 0.9), rgba(0, 18, 51, 0.9)),
+                repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(0, 255, 255, 0.1) 50px, rgba(0, 255, 255, 0.1) 51px),
+                repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(0, 255, 255, 0.1) 50px, rgba(0, 255, 255, 0.1) 51px);
+        }
+
+        .terminal {
+            font-family: 'Space Mono', monospace;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #001233;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #00ff9d;
+            border-radius: 4px;
+        }
+
+        .glow {
+            box-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .status-light {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body class="matrix-bg min-h-screen">
+    <div class="container mx-auto p-6">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6 text-cyan-400">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-robot text-3xl"></i>
+                    <h1 class="text-2xl font-bold terminal">NEURAL INTERFACE v1.0</h1>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="status-light inline-block w-2 h-2 bg-green-400 rounded-full"></span>
+                    <span class="text-sm terminal">SYSTEM ONLINE</span>
+                </div>
+            </div>
+
+            <!-- Main Interface -->
+            <div class="bg-gray-900/80 backdrop-blur-sm rounded-lg p-6 glow">
+                <!-- Chat Window -->
+                <div id="chat-history" class="h-[500px] mb-6 p-4 bg-gray-900/50 rounded-lg custom-scrollbar overflow-y-auto terminal text-gray-200">
+                    <div class="text-cyan-400 mb-4">
+                        <i class="fas fa-terminal mr-2"></i>
+                        System initialized. Ready for input.
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="flex gap-3">
+                    <div class="flex-1 relative">
+                        <i class="fas fa-chevron-right absolute left-3 top-1/2 transform -translate-y-1/2 text-cyan-400"></i>
+                        <input type="text" 
+                               id="user-input" 
+                               class="w-full pl-8 pr-4 py-3 bg-gray-800/50 border border-cyan-400/30 rounded-lg focus:outline-none focus:border-cyan-400 text-cyan-100 terminal"
+                               placeholder="Enter your query...">
+                    </div>
+                    <button onclick="sendMessage()" 
+                            class="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors terminal flex items-center space-x-2">
+                        <span>PROCESS</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <!-- Status Bar -->
+                <div class="mt-4 flex justify-between text-xs text-cyan-400/70 terminal">
+                    <span>MODEL: LLAMA3-70B</span>
+                    <span>LATENCY: <span id="latency">0</span>ms</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let startTime;
+        
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value;
+            if (!message) return;
+
+            addToChat('User: ' + message, 'user');
+            input.value = '';
+            startTime = Date.now();
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+                const data = await response.json();
+                const latency = Date.now() - startTime;
+                document.getElementById('latency').textContent = latency;
+                addToChat('AI: ' + data.response, 'ai');
+            } catch (error) {
+                addToChat('Error: Neural processing failed', 'error');
+            }
+        }
+
+        function addToChat(message, type) {
+            const chatHistory = document.getElementById('chat-history');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `p-3 rounded-lg mb-2 ${
+                type === 'user' ? 'bg-gray-800/50 border-l-4 border-cyan-400' :
+                type === 'ai' ? 'bg-gray-800/50 border-l-4 border-green-400' :
+                'bg-red-900/50 border-l-4 border-red-400'
+            }`;
+            messageDiv.textContent = message;
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+flask
+langchain-groq
+langchain
+langgraph
+python-dotenv
+duckduckgo-search
