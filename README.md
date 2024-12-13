@@ -41,6 +41,9 @@ pip install -r requirements.txt
 ```bash
 GROQ_API_KEY=your_groq_api_key_here
 ```
+```bash
+LANGCHAIN_API_KEY=your_langchain_api_key_here
+```
 
 4. Run the application:
 ```bash
@@ -75,11 +78,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 This project is licensed under the MIT License - see the LICENSE file for details.
 ```
 
-For the image, you'll want to take a screenshot of your application running and save it as `image1.png` in the `/public` directory. The screenshot should showcase:
 
-1. The cyberpunk interface
-2. A sample conversation demonstrating the search capabilities
-3. The status indicators and latency display
 
 
 
