@@ -4,3 +4,10 @@ langchain
 langgraph
 python-dotenv
 duckduckgo-search
+flask-sqlalchemy
+flask-migrate
+google-generativeai
+tiktoken
+werkzeug
+PyPDF2 
+python-docx

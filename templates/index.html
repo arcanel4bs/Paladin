@@ -43,6 +43,21 @@
         .status-light {
             animation: pulse 2s infinite;
         }
+
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-upload input[type=file] {
+            position: absolute;
+            font-size: 100px;
+            right: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="matrix-bg min-h-screen">
@@ -70,21 +85,40 @@
                     </div>
                 </div>
 
-                <!-- Input Area -->
-                <div class="flex gap-3">
-                    <div class="flex-1 relative">
-                        <i class="fas fa-chevron-right absolute left-3 top-1/2 transform -translate-y-1/2 text-cyan-400"></i>
-                        <input type="text" 
-                               id="user-input" 
-                               class="w-full pl-8 pr-4 py-3 bg-gray-800/50 border border-cyan-400/30 rounded-lg focus:outline-none focus:border-cyan-400 text-cyan-100 terminal"
-                               placeholder="Enter your query...">
+                <!-- Input Form -->
+                <form id="chat-form" class="space-y-4">
+                    <!-- Text Input Area -->
+                    <div class="flex gap-3">
+                        <div class="flex-1 relative">
+                            <i class="fas fa-chevron-right absolute left-3 top-1/2 transform -translate-y-1/2 text-cyan-400"></i>
+                            <input type="text" 
+                                   id="user-input" 
+                                   class="w-full pl-8 pr-4 py-3 bg-gray-800/50 border border-cyan-400/30 rounded-lg focus:outline-none focus:border-cyan-400 text-cyan-100 terminal"
+                                   placeholder="Enter your query...">
+                        </div>
+                        <button type="submit" 
+                                class="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors terminal flex items-center space-x-2">
+                            <span>PROCESS</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
                     </div>
-                    <button onclick="sendMessage()" 
-                            class="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors terminal flex items-center space-x-2">
-                        <span>PROCESS</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
+
+                    <!-- File Upload Area -->
+                    <div class="flex items-center space-x-4">
+                        <div class="file-upload">
+                            <button type="button" 
+                                    class="px-4 py-2 bg-gray-800/50 border border-cyan-400/30 rounded-lg text-cyan-400 hover:bg-gray-700/50 transition-colors terminal">
+                                <i class="fas fa-upload mr-2"></i>
+                                Upload File
+                            </button>
+                            <input type="file" 
+                                   id="file-upload" 
+                                   class="hidden"
+                                   accept=".txt,.pdf,.doc,.docx">
+                        </div>
+                        <span id="file-name" class="text-cyan-400 text-sm terminal"></span>
+                    </div>
+                </form>
 
                 <!-- Status Bar -->
                 <div class="mt-4 flex justify-between text-xs text-cyan-400/70 terminal">
@@ -97,29 +131,71 @@
 
     <script>
         let startTime;
-        
+        let conversation_id = null;
+
+        // File upload button handling
+        document.querySelector('.file-upload button').addEventListener('click', function() {
+            document.getElementById('file-upload').click();
+        });
+
+        // File upload handling
+        document.getElementById('file-upload').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name;
+            document.getElementById('file-name').textContent = fileName || '';
+        });
+
+        // Form submission
+        document.getElementById('chat-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            sendMessage();
+        });
+
         async function sendMessage() {
             const input = document.getElementById('user-input');
-            const message = input.value;
-            if (!message) return;
+            const fileInput = document.getElementById('file-upload');
+            const message = input.value.trim();
+            const file = fileInput.files[0];
 
-            addToChat('User: ' + message, 'user');
-            input.value = '';
+            if (!message && !file) return;
+
+            const formData = new FormData();
+            if (message) {
+                formData.append('message', message);
+                addToChat('User: ' + message, 'user');
+                input.value = '';
+            }
+
+            if (file) {
+                formData.append('file', file);
+                addToChat('User: [Uploaded file: ' + file.name + ']', 'user');
+                fileInput.value = '';
+                document.getElementById('file-name').textContent = '';
+            }
+
+            if (conversation_id) {
+                formData.append('conversation_id', conversation_id);
+            }
+
             startTime = Date.now();
 
             try {
                 const response = await fetch('/chat', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ message })
+                    body: formData
                 });
+
                 const data = await response.json();
+                conversation_id = data.conversation_id;
+
                 const latency = Date.now() - startTime;
                 document.getElementById('latency').textContent = latency;
+
+                if (data.file_summary) {
+                    addToChat('AI: [File Summary] ' + data.file_summary, 'ai');
+                }
                 addToChat('AI: ' + data.response, 'ai');
             } catch (error) {
+                console.error(error);
                 addToChat('Error: Neural processing failed', 'error');
             }
         }
@@ -136,12 +212,6 @@
             chatHistory.appendChild(messageDiv);
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
-
-        document.getElementById('user-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
     </script>
 </body>
-</html>
+</html> 

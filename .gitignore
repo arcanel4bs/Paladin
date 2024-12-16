@@ -1,1 +1,49 @@
+# Environment variables
 .env
+
+# Internal documentation
+data_extraction_langraph.txt
+GEMINI_API_DOCS.txt
+langraph_groq_example.txt
+
+# Database
+/instance
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Flask migrations
+migrations/
+migrations/*
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Virtual Environment
+venv/
+env/
+.env/
+.venv/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Logs
+*.log
+logs/
