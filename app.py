@@ -129,8 +129,8 @@ class WorkflowState(TypedDict):
 
 # Create prompt templates
 analysis_prompt = ChatPromptTemplate.from_messages([
-    ("system", """You are a helpful AI assistant with access to web search capabilities.
-Analyze the user's input and determine if additional information from the web is needed.
+    ("system", """You are a helpful AI assistant with access to web search capabilities and file upload.
+Analyze the user's input and determine if additional information from the web is needed. 
 
 Instructions:
 1. Identify the core question in the user's input.

@@ -1,47 +1,83 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AI Laboratory Interface</title>
+    <title>Paladin Divine Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
         
-        .matrix-bg {
-            background-color: #001233;
-            background-image: 
-                linear-gradient(rgba(0, 18, 51, 0.9), rgba(0, 18, 51, 0.9)),
-                repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(0, 255, 255, 0.1) 50px, rgba(0, 255, 255, 0.1) 51px),
-                repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(0, 255, 255, 0.1) 50px, rgba(0, 255, 255, 0.1) 51px);
+        @font-face {
+            font-family: 'CursorSword';
+            src: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path fill="%23DAA520" d="M16 2l-1.5 1v8l1 1l-3 3c-.3.3-.3.7 0 1 .1.1.3.2.5.2s.4-.1.5-.2l3-3 1 1v8l1.5 1V2zm-.5 5v2l1 1 1-1V7l-1-1z"/><path fill="%23B8860B" d="M15.5 11.5L14 13l1 1 1.5-1.5z"/></svg>') format('svg');
         }
 
-        .terminal {
-            font-family: 'Space Mono', monospace;
+        body {
+            cursor: none;
+        }
+
+        #custom-cursor {
+            content: "†";
+            color: #DAA520;
+            font-size: 24px;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            transform: translate(-50%, -50%);
+            text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+        }
+
+        button:hover ~ #custom-cursor, 
+        input[type="text"]:hover ~ #custom-cursor,
+        input[type="file"]:hover ~ #custom-cursor,
+        .file-upload:hover ~ #custom-cursor,
+        a:hover ~ #custom-cursor {
+            color: #B8860B;
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+
+        .holy-bg {
+            background-color: #f0f4ff;
+            background-image: 
+                linear-gradient(rgba(240, 244, 255, 0.95), rgba(240, 244, 255, 0.95)),
+                repeating-linear-gradient(45deg, transparent, transparent 50px, rgba(255, 215, 0, 0.15) 50px, rgba(255, 215, 0, 0.15) 51px),
+                repeating-linear-gradient(-45deg, transparent, transparent 50px, rgba(255, 215, 0, 0.15) 50px, rgba(255, 215, 0, 0.15) 51px);
+        }
+
+        .paladin-font {
+            font-family: 'Cinzel', serif;
         }
 
         .custom-scrollbar::-webkit-scrollbar {
             width: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: #001233;
+            background: #f0f4ff;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #00ff9d;
+            background: linear-gradient(to bottom, #ffd700, #ffb700);
             border-radius: 4px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
         }
 
-        .glow {
-            box-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+        .holy-glow {
+            box-shadow: 
+                0 0 30px rgba(255, 215, 0, 0.2),
+                0 0 60px rgba(255, 215, 0, 0.1),
+                inset 0 0 30px rgba(255, 215, 0, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.2);
         }
 
-        @keyframes pulse {
+        @keyframes divine-pulse {
             0% { opacity: 1; }
             50% { opacity: 0.7; }
             100% { opacity: 1; }
         }
 
-        .status-light {
-            animation: pulse 2s infinite;
+        .divine-light {
+            animation: divine-pulse 3s infinite;
         }
 
         .file-upload {
@@ -58,96 +94,150 @@
             opacity: 0;
             cursor: pointer;
         }
+
+        .chat-window {
+            box-shadow: 
+                inset 0 2px 4px rgba(0, 0, 0, 0.05),
+                0 1px 3px rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .divine-text {
+            text-shadow: 0 1px 2px rgba(205, 165, 0, 0.2);
+        }
+
+        .scroll-decoration {
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20v20H0V0zm10 10l5-5H5l5 5z' fill='%23FCD34D' fill-opacity='0.1'/%3E%3C/path%3E%3C/svg%3E");
+        }
+
+        .holy-text-gradient {
+            background: linear-gradient(135deg, #B8860B, #DAA520);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .divine-border {
+            border-image: linear-gradient(to right, #B8860B, #DAA520) 1;
+        }
+
+        .holy-glow {
+            box-shadow: 
+                0 0 30px rgba(255, 215, 0, 0.2),
+                0 0 60px rgba(255, 215, 0, 0.1),
+                inset 0 0 30px rgba(255, 215, 0, 0.1);
+            border: 2px solid rgba(218, 165, 32, 0.3);
+        }
+
+        .divine-scroll {
+            background: linear-gradient(to right, rgba(255, 248, 220, 0.9), rgba(255, 250, 240, 0.9));
+        }
     </style>
 </head>
-<body class="matrix-bg min-h-screen">
-    <div class="container mx-auto p-6">
+<body class="holy-bg min-h-screen">
+    <div id="custom-cursor">†</div>
+    <div class="container mx-auto px-6 py-4">
         <div class="max-w-4xl mx-auto">
             <!-- Header -->
-            <div class="flex items-center justify-between mb-6 text-cyan-400">
-                <div class="flex items-center space-x-4">
-                    <i class="fas fa-robot text-3xl"></i>
-                    <h1 class="text-2xl font-bold terminal">NEURAL INTERFACE v1.0</h1>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <span class="status-light inline-block w-2 h-2 bg-green-400 rounded-full"></span>
-                    <span class="text-sm terminal">SYSTEM ONLINE</span>
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold paladin-font holy-text-gradient flex items-center">
+                    <img src="/static/paladin-logo.jpg" alt="Paladin" class="w-10 h-10 mr-3 rounded-full">
+                    PALADIN
+                </h1>
+                <div class="flex items-center bg-white/30 px-4 py-2 rounded-full backdrop-blur-sm">
+                    <span class="divine-light inline-block w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                    <span class="text-sm paladin-font text-green-800 font-semibold">DIVINE LINK ACTIVE</span>
                 </div>
             </div>
 
             <!-- Main Interface -->
-            <div class="bg-gray-900/80 backdrop-blur-sm rounded-lg p-6 glow">
+            <div class="bg-white/95 backdrop-blur-sm rounded-xl p-6 pb-20 holy-glow border-amber-100 relative">
+                <!-- Decorative corners -->
+                <div class="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-amber-400/30 rounded-tl-xl"></div>
+                <div class="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-amber-400/30 rounded-tr-xl"></div>
+                <div class="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-amber-400/30 rounded-bl-xl"></div>
+                <div class="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-amber-400/30 rounded-br-xl"></div>
+
                 <!-- Chat Window -->
-                <div id="chat-history" class="h-[500px] mb-6 p-4 bg-gray-900/50 rounded-lg custom-scrollbar overflow-y-auto terminal text-gray-200">
-                    <div class="text-cyan-400 mb-4">
-                        <i class="fas fa-terminal mr-2"></i>
-                        System initialized. Ready for input.
+                <div id="chat-history" class="h-[500px] mb-6 p-6 divine-scroll rounded-lg custom-scrollbar overflow-y-auto paladin-font text-amber-900 chat-window">
+                    <div class="flex items-center space-x-3 text-amber-900 mb-6 p-4 bg-amber-50/50 rounded-lg border border-amber-200">
+                        <i class="fas fa-scroll text-2xl text-amber-700"></i>
+                        <div>
+                            <div class="font-semibold mb-1">[Divine Connection Established]</div>
+                            <div class="text-sm text-amber-800">Speak your query, seeker of knowledge.</div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Input Form -->
-                <form id="chat-form" class="space-y-4">
+                <form id="chat-form" class="space-y-6">
                     <!-- Text Input Area -->
-                    <div class="flex gap-3">
-                        <div class="flex-1 relative">
-                            <i class="fas fa-chevron-right absolute left-3 top-1/2 transform -translate-y-1/2 text-cyan-400"></i>
+                    <div class="flex gap-4">
+                        <div class="flex-1 relative flex items-center">
                             <input type="text" 
                                    id="user-input" 
-                                   class="w-full pl-8 pr-4 py-3 bg-gray-800/50 border border-cyan-400/30 rounded-lg focus:outline-none focus:border-cyan-400 text-cyan-100 terminal"
-                                   placeholder="Enter your query...">
+                                   class="w-full pl-4 pr-12 py-4 divine-scroll border-2 border-amber-400/40 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-400/30 text-amber-900 paladin-font shadow-inner transition-all duration-200"
+                                   placeholder="Seek divine wisdom...">
+                            <label class="file-upload absolute right-4 cursor-pointer">
+                                <i class="fas fa-scroll text-amber-700 hover:text-amber-600 transition-colors"></i>
+                                <input type="file" 
+                                       id="file-upload" 
+                                       class="hidden"
+                                       accept=".txt,.pdf,.doc,.docx">
+                            </label>
                         </div>
                         <button type="submit" 
-                                class="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors terminal flex items-center space-x-2">
-                            <span>PROCESS</span>
-                            <i class="fas fa-arrow-right"></i>
+                                class="px-8 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-lg transition-all duration-200 paladin-font shadow-lg hover:shadow-xl flex items-center space-x-2">
+                            <i class="fas fa-dove text-xl"></i>
                         </button>
-                    </div>
-
-                    <!-- File Upload Area -->
-                    <div class="flex items-center space-x-4">
-                        <div class="file-upload">
-                            <button type="button" 
-                                    class="px-4 py-2 bg-gray-800/50 border border-cyan-400/30 rounded-lg text-cyan-400 hover:bg-gray-700/50 transition-colors terminal">
-                                <i class="fas fa-upload mr-2"></i>
-                                Upload File
-                            </button>
-                            <input type="file" 
-                                   id="file-upload" 
-                                   class="hidden"
-                                   accept=".txt,.pdf,.doc,.docx">
-                        </div>
-                        <span id="file-name" class="text-cyan-400 text-sm terminal"></span>
                     </div>
                 </form>
 
                 <!-- Status Bar -->
-                <div class="mt-4 flex justify-between text-xs text-cyan-400/70 terminal">
-                    <span>MODEL: LLAMA3-70B</span>
-                    <span>LATENCY: <span id="latency">0</span>ms</span>
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-amber-50/90 to-amber-100/90 p-4 rounded-b-xl border-t border-amber-200">
+                    <div class="flex justify-between items-center text-xs text-amber-900 paladin-font divine-text px-4">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-microchip text-amber-700"></i>
+                            <span>DIVINE VESSEL: LLAMA3-70B</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-stopwatch text-amber-700"></i>
+                            <span>BLESSING TIME: <span id="latency" class="font-semibold">0</span>ms</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-8 mb-6 text-sm text-amber-800 opacity-80">
+        
+        <a href="https://ko-fi.com/arcanel4bs" target="_blank" rel="noopener" class="inline-flex items-center gap-2 hover:text-amber-900 transition-colors">
+            <i class="fas fa-mug-hot"></i>
+            <span>Support this divine quest</span>
+        </a>
+        <p class="mb-3 py-4">crafted by arcanel4bs</p>
     </div>
 
     <script>
         let startTime;
         let conversation_id = null;
 
-        // File upload button handling
-        document.querySelector('.file-upload button').addEventListener('click', function() {
-            document.getElementById('file-upload').click();
-        });
-
-        // File upload handling
+        // Remove the old file upload button listener since we're using a label
         document.getElementById('file-upload').addEventListener('change', function(e) {
             const fileName = e.target.files[0]?.name;
-            document.getElementById('file-name').textContent = fileName || '';
+            const fileNameSpan = document.getElementById('file-name');
+            if (fileNameSpan) {
+                fileNameSpan.textContent = fileName || '';
+            }
         });
 
-        // Form submission
-        document.getElementById('chat-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            sendMessage();
+        // Update form submission handling
+        document.getElementById('chat-form').addEventListener('submit', async function(e) {
+            e.preventDefault();  // Prevent form submission
+            await sendMessage();
         });
 
         async function sendMessage() {
@@ -169,7 +259,10 @@
                 formData.append('file', file);
                 addToChat('User: [Uploaded file: ' + file.name + ']', 'user');
                 fileInput.value = '';
-                document.getElementById('file-name').textContent = '';
+                const fileNameSpan = document.getElementById('file-name');
+                if (fileNameSpan) {
+                    fileNameSpan.textContent = '';
+                }
             }
 
             if (conversation_id) {
@@ -184,6 +277,10 @@
                     body: formData
                 });
 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
                 const data = await response.json();
                 conversation_id = data.conversation_id;
 
@@ -193,25 +290,47 @@
                 if (data.file_summary) {
                     addToChat('AI: [File Summary] ' + data.file_summary, 'ai');
                 }
-                addToChat('AI: ' + data.response, 'ai');
+                if (data.response) {
+                    addToChat('AI: ' + data.response, 'ai');
+                }
             } catch (error) {
-                console.error(error);
-                addToChat('Error: Neural processing failed', 'error');
+                console.error('Error:', error);
+                addToChat('Error: Divine connection interrupted', 'error');
             }
         }
 
         function addToChat(message, type) {
             const chatHistory = document.getElementById('chat-history');
             const messageDiv = document.createElement('div');
-            messageDiv.className = `p-3 rounded-lg mb-2 ${
-                type === 'user' ? 'bg-gray-800/50 border-l-4 border-cyan-400' :
-                type === 'ai' ? 'bg-gray-800/50 border-l-4 border-green-400' :
-                'bg-red-900/50 border-l-4 border-red-400'
-            }`;
-            messageDiv.textContent = message;
+            messageDiv.className = `p-4 rounded-lg mb-3 shadow-sm flex items-center justify-between ${
+                type === 'user' ? 'bg-amber-50/90 border-l-4 border-amber-500 hover:bg-amber-50' :
+                type === 'ai' ? 'bg-gradient-to-r from-amber-50/80 to-amber-50/60 border-l-4 border-amber-400 hover:bg-amber-50/90' :
+                'bg-red-100/80 border-l-4 border-red-400'
+            } transition-all duration-200`;
+
+            const messageContent = document.createElement('div');
+            messageContent.className = 'flex items-center gap-3';
+
+            const icon = document.createElement('i');
+            icon.className = type === 'user' ? 'fas fa-shield-alt text-amber-600' : 'fas fa-sword text-amber-600';
+            messageContent.appendChild(icon);
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = type === 'user' ? message.replace('User: ', '') : message.replace('AI: ', '');
+            messageContent.appendChild(textSpan);
+
+            messageDiv.appendChild(messageContent);
             chatHistory.appendChild(messageDiv);
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
+
+        document.addEventListener('mousemove', (e) => {
+            const cursor = document.getElementById('custom-cursor');
+            if (cursor) {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+            }
+        });
     </script>
 </body>
 </html> 
