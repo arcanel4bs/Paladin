@@ -16,7 +16,7 @@ Paladin is a noble AI assistant that combines the **divine power of Llama 3 (70B
 
 ## Technical Stack
 - **Frontend**: TailwindCSS, Divine CSS Animations
-- **Backend**: Flask, LangChain, LangGraph
+- **Backend**: Flask, SQLite, LangChain, LangGraph
 - **LLM**: Groq (Llama 3 70B) & Gemini (2.0 flash)
 - **Knowledge Seeking**: DuckDuckGo Search API
 - **Scroll Processing**: Supports text, PDF, and Word documents
