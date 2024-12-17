@@ -1,7 +1,5 @@
 # Paladin - Open-Source Perplexity Alternative
 
-![Paladin Interface](/public/paladin-demo.png)
-
 ## Overview
 Paladin is a noble AI assistant that combines the divine power of Llama 3 (70B) with sacred knowledge seeking through LangGraph workflows. It features a radiant, holy chamber interface designed for enlightened human-AI interaction.
 
@@ -12,6 +10,9 @@ Paladin is a noble AI assistant that combines the divine power of Llama 3 (70B) 
 - ✨ **Blessed Workflow**: Multi-step processing for enhanced wisdom
 - 🏰 **Holy Chamber UI**: Celestial-inspired interface with divine status indicators
 - 🌟 **Divine Metrics**: Built-in blessing tracking and sacred status monitoring
+
+![Paladin Interface](/public/paladin-demo.png)
+
 
 ## Technical Stack
 - **Frontend**: TailwindCSS, Divine CSS Animations
