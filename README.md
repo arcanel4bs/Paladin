@@ -17,7 +17,7 @@ Paladin is a noble AI assistant that combines the divine power of Llama 3 (70B) 
 ## Technical Stack
 - **Frontend**: TailwindCSS, Divine CSS Animations
 - **Backend**: Flask, LangChain, LangGraph
-- **LLM**: Groq (Llama 3 70B)
+- **LLM**: Groq (Llama 3 70B) & Gemini (2.0 flash)
 - **Knowledge Seeking**: DuckDuckGo Search API
 - **Scroll Processing**: Supports text, PDF, and Word documents
 
@@ -28,7 +28,6 @@ Paladin is a noble AI assistant that combines the divine power of Llama 3 (70B) 
 - Groq API Key
 - Google Gemini API Key (for interpreting lengthy scrolls)
 - DuckDuckGo Search capabilities
-- Required Python packages: `PyPDF2`, `python-docx`, etc.
 
 ### Installation
 1. Clone the sacred repository:
@@ -46,6 +45,7 @@ pip install -r requirements.txt
 ```bash
 GROQ_API_KEY=your_groq_api_key
 GEMINI_API_KEY=your_gemini_api_key
+LANGCHAIN_API_KEY=your_langchain_api_key
 ```
 
 4. Consecrate the database:
