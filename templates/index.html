@@ -4,38 +4,13 @@
     <title>Paladin Divine Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
         
         @font-face {
             font-family: 'CursorSword';
             src: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path fill="%23DAA520" d="M16 2l-1.5 1v8l1 1l-3 3c-.3.3-.3.7 0 1 .1.1.3.2.5.2s.4-.1.5-.2l3-3 1 1v8l1.5 1V2zm-.5 5v2l1 1 1-1V7l-1-1z"/><path fill="%23B8860B" d="M15.5 11.5L14 13l1 1 1.5-1.5z"/></svg>') format('svg');
-        }
-
-        body {
-            cursor: none;
-        }
-
-        #custom-cursor {
-            content: "†";
-            color: #DAA520;
-            font-size: 24px;
-            position: fixed;
-            pointer-events: none;
-            z-index: 9999;
-            left: 0;
-            top: 0;
-            transform: translate(-50%, -50%);
-            text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-        }
-
-        button:hover ~ #custom-cursor, 
-        input[type="text"]:hover ~ #custom-cursor,
-        input[type="file"]:hover ~ #custom-cursor,
-        .file-upload:hover ~ #custom-cursor,
-        a:hover ~ #custom-cursor {
-            color: #B8860B;
-            transform: translate(-50%, -50%) scale(1.2);
         }
 
         .holy-bg {
@@ -133,51 +108,287 @@
         .divine-scroll {
             background: linear-gradient(to right, rgba(255, 248, 220, 0.9), rgba(255, 250, 240, 0.9));
         }
+
+        .markdown-content {
+            line-height: 1.6;
+            color: #4a5568;
+        }
+        
+        .markdown-content h1 {
+            font-size: 1.8em;
+            color: #2d3748;
+            margin-bottom: 1em;
+            font-family: 'Cinzel', serif;
+        }
+        
+        .markdown-content h2 {
+            font-size: 1.5em;
+            color: #4a5568;
+            margin-top: 1.5em;
+            margin-bottom: 0.8em;
+            font-family: 'Cinzel', serif;
+        }
+        
+        .markdown-content p {
+            margin-bottom: 1em;
+        }
+        
+        .markdown-content ul, 
+        .markdown-content ol {
+            margin-left: 1.5em;
+            margin-bottom: 1em;
+        }
+        
+        .markdown-content blockquote {
+            border-left: 4px solid #cbd5e0;
+            padding-left: 1em;
+            margin: 1em 0;
+            color: #718096;
+        }
+        
+        .markdown-content code {
+            background: #edf2f7;
+            padding: 0.2em 0.4em;
+            border-radius: 0.2em;
+            font-size: 0.9em;
+        }
+        
+        .markdown-content hr {
+            border: 0;
+            border-top: 2px solid #edf2f7;
+            margin: 2em 0;
+        }
+
+        /* Add these new dark mode styles */
+        :root {
+            --light-bg: #f0f4ff;
+            --dark-bg: #1a1a1a;
+            --dark-secondary: #2d2d2d;
+            --silver: #C0C0C0;
+            --dark-gold: #B8860B;
+        }
+
+        .dark .holy-bg {
+            background-color: var(--dark-bg);
+            background-image: 
+                linear-gradient(rgba(26, 26, 26, 0.95), rgba(26, 26, 26, 0.95)),
+                repeating-linear-gradient(45deg, transparent, transparent 50px, rgba(192, 192, 192, 0.1) 50px, rgba(192, 192, 192, 0.1) 51px),
+                repeating-linear-gradient(-45deg, transparent, transparent 50px, rgba(192, 192, 192, 0.1) 50px, rgba(192, 192, 192, 0.1) 51px);
+        }
+
+        .dark .divine-scroll {
+            background: linear-gradient(to right, rgba(45, 45, 45, 0.9), rgba(40, 40, 40, 0.9));
+        }
+
+        .dark .markdown-content {
+            color: var(--silver);
+        }
+
+        .dark .markdown-content h1,
+        .dark .markdown-content h2 {
+            color: var(--silver);
+        }
+
+        .dark .chat-window {
+            box-shadow: 
+                inset 0 2px 4px rgba(0, 0, 0, 0.2),
+                0 1px 3px rgba(192, 192, 192, 0.1);
+            border: 1px solid rgba(192, 192, 192, 0.2);
+        }
+
+        /* Update existing message styles for dark mode */
+        .dark .bg-amber-50\/90 {
+            background-color: rgba(45, 45, 45, 0.9);
+            color: var(--silver);
+        }
+
+        .dark .bg-gradient-to-r {
+            background-image: linear-gradient(to right, rgba(45, 45, 45, 0.9), rgba(40, 40, 40, 0.9));
+        }
+
+        .dark .text-amber-900 {
+            color: var(--silver);
+        }
+
+        .dark .border-amber-400\/40 {
+            border-color: rgba(192, 192, 192, 0.4);
+        }
+
+        .dark .text-amber-800 {
+            color: var(--silver);
+        }
+
+        .dark .from-amber-500 {
+            --tw-gradient-from: var(--dark-gold);
+        }
+
+        .dark .to-amber-600 {
+            --tw-gradient-to: #8B7355;
+        }
+
+        /* Update existing dark mode styles */
+        .dark .bg-white\/95 {
+            background-color: rgba(26, 26, 26, 0.95);
+        }
+
+        .dark .bg-white\/30 {
+            background-color: rgba(26, 26, 26, 0.3);
+        }
+
+        .dark .hover\:bg-white\/40:hover {
+            background-color: rgba(26, 26, 26, 0.4);
+        }
+
+        /* Input field dark mode */
+        .dark #user-input {
+            background-color: rgba(45, 45, 45, 0.9);
+            color: var(--silver);
+        }
+
+        .dark #user-input::placeholder {
+            color: rgba(192, 192, 192, 0.6);
+        }
+
+        /* Icons dark mode */
+        .dark .text-amber-700 {
+            color: var(--dark-gold);
+        }
+
+        .dark .text-amber-600 {
+            color: var(--dark-gold);
+        }
+
+        /* Footer dark mode */
+        .dark .text-amber-800.opacity-80 {
+            color: var(--silver);
+            opacity: 0.6;
+        }
+
+        /* Status bar dark mode */
+        .dark .divine-text {
+            color: var(--silver);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Watermark logo dark mode */
+        .dark .holy-text-gradient {
+            background: linear-gradient(135deg, var(--dark-gold), #8B7355);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        /* Custom scrollbar dark mode */
+        .dark .custom-scrollbar::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, var(--dark-gold), #8B7355);
+            border: 1px solid rgba(192, 192, 192, 0.3);
+        }
+
+        /* Message hover states dark mode */
+        .dark .hover\:bg-amber-50:hover {
+            background-color: rgba(45, 45, 45, 1);
+        }
+
+        .dark .hover\:bg-amber-50\/90:hover {
+            background-color: rgba(45, 45, 45, 0.95);
+        }
+
+        /* Add to dark mode styles */
+        .dark .intro-message {
+            background: rgba(45, 45, 45, 0.8);
+            border: 1px solid rgba(184, 134, 11, 0.3);
+            box-shadow: 0 0 20px rgba(184, 134, 11, 0.1);
+        }
+
+        .dark .intro-title {
+            color: var(--dark-gold);
+            font-size: 1.5em;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .dark .intro-subtitle {
+            color: var(--silver);
+            opacity: 0.9;
+        }
+
+        /* Add base intro message styles (for both light and dark modes) */
+        .intro-message {
+            background: rgba(255, 248, 220, 0.8);
+            border: 1px solid rgba(184, 134, 11, 0.3);
+            box-shadow: 0 0 20px rgba(184, 134, 11, 0.1);
+        }
+
+        .intro-title {
+            color: #B8860B;
+            font-size: 1.5em;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .intro-subtitle {
+            color: #8B7355;
+            font-size: 0.9em;
+        }
+
+        /* Update the background logo opacity */
+        .background-logo {
+            opacity: 0.15;  /* Changed from 0.1 to 0.15 */
+        }
     </style>
 </head>
-<body class="holy-bg min-h-screen">
-    <div id="custom-cursor">†</div>
-    <div class="container mx-auto px-6 py-4">
-        <div class="max-w-4xl mx-auto">
-            <!-- Header -->
-            <div class="flex justify-between items-center mb-6">
-                <h1 class="text-3xl font-bold paladin-font holy-text-gradient flex items-center">
-                    <img src="/static/paladin-logo.jpg" alt="Paladin" class="w-10 h-10 mr-3 rounded-full">
-                    PALADIN
-                </h1>
-                <div class="flex items-center bg-white/30 px-4 py-2 rounded-full backdrop-blur-sm">
-                    <span class="divine-light inline-block w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-                    <span class="text-sm paladin-font text-green-800 font-semibold">DIVINE LINK ACTIVE</span>
-                </div>
+<body class="holy-bg min-h-screen flex flex-col">
+    <!-- Main content area -->
+    <div class="flex-1 flex flex-col h-screen">
+        <!-- Centered Logo -->
+        <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 background-logo pointer-events-none">
+            <div class="flex flex-col items-center">
+                <img src="/static/paladin-logo.jpg" alt="Paladin" class="w-32 h-32 rounded-full mb-4">
+                <h1 class="text-6xl font-bold paladin-font holy-text-gradient">PALADIN</h1>
             </div>
+        </div>
 
-            <!-- Main Interface -->
-            <div class="bg-white/95 backdrop-blur-sm rounded-xl p-6 pb-20 holy-glow border-amber-100 relative">
-                <!-- Decorative corners -->
-                <div class="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-amber-400/30 rounded-tl-xl"></div>
-                <div class="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-amber-400/30 rounded-tr-xl"></div>
-                <div class="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-amber-400/30 rounded-bl-xl"></div>
-                <div class="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-amber-400/30 rounded-br-xl"></div>
+        <!-- Status Indicator - Floating top right -->
+        <div class="fixed top-6 right-6 z-20 flex items-center gap-4">
+            <!-- Theme Toggle -->
+            <button id="theme-toggle" 
+                    class="flex items-center bg-white/30 px-4 py-2 rounded-full backdrop-blur-sm hover:bg-white/40 transition-all duration-200 dark:bg-black/30 dark:hover:bg-black/40">
+                <i class="fas fa-sun text-amber-600 dark:hidden"></i>
+                <i class="fas fa-moon text-silver-400 hidden dark:block"></i>
+            </button>
+            
+            <!-- Status Indicator -->
+            <div class="flex items-center bg-white/30 px-4 py-2 rounded-full backdrop-blur-sm hover:bg-white/40 transition-all duration-200 dark:bg-black/30 dark:hover:bg-black/40">
+                <span class="divine-light inline-block w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                <span class="text-sm paladin-font text-green-800 dark:text-green-400 font-semibold">ACTIVE</span>
+            </div>
+        </div>
 
-                <!-- Chat Window -->
-                <div id="chat-history" class="h-[500px] mb-6 p-6 divine-scroll rounded-lg custom-scrollbar overflow-y-auto paladin-font text-amber-900 chat-window">
-                    <div class="flex items-center space-x-3 text-amber-900 mb-6 p-4 bg-amber-50/50 rounded-lg border border-amber-200">
+        <!-- Chat history - Scrollable area -->
+        <main class="flex-1 overflow-y-auto pb-32 pt-6"> <!-- Reduced top padding -->
+            <div class="max-w-4xl mx-auto px-6">
+                <div id="chat-history" class="space-y-6">
+                    <div class="flex items-center space-x-3 text-amber-900 p-6 bg-amber-50/50 rounded-lg border border-amber-200 backdrop-blur-sm intro-message">
                         <i class="fas fa-scroll text-2xl text-amber-700"></i>
-                        <div>
-                            <div class="font-semibold mb-1">[Divine Connection Established]</div>
-                            <div class="text-sm text-amber-800">Speak your query, seeker of knowledge.</div>
+                        <div class="markdown-content">
+                            <div class="font-bold mb-2 paladin-font intro-title">PALADIN has been summoned</div>
+                            <div class="text-sm text-amber-800 intro-subtitle paladin-font">Speak your query, seeker of knowledge.</div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </main>
 
-                <!-- Input Form -->
-                <form id="chat-form" class="space-y-6">
-                    <!-- Text Input Area -->
+        <!-- Input area - Fixed at bottom -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm py-4 px-6 z-10">
+            <div class="max-w-4xl mx-auto">
+                <form id="chat-form" class="space-y-4">
                     <div class="flex gap-4">
                         <div class="flex-1 relative flex items-center">
                             <input type="text" 
                                    id="user-input" 
-                                   class="w-full pl-4 pr-12 py-4 divine-scroll border-2 border-amber-400/40 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-400/30 text-amber-900 paladin-font shadow-inner transition-all duration-200"
+                                   class="w-full pl-4 pr-12 py-4 divine-scroll border-2 border-amber-400/40 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-400/30 text-amber-900 font-sans shadow-inner transition-all duration-200"
                                    placeholder="Seek divine wisdom...">
                             <label class="file-upload absolute right-4 cursor-pointer">
                                 <i class="fas fa-scroll text-amber-700 hover:text-amber-600 transition-colors"></i>
@@ -192,33 +403,35 @@
                             <i class="fas fa-dove text-xl"></i>
                         </button>
                     </div>
-                </form>
 
-                <!-- Status Bar -->
-                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-amber-50/90 to-amber-100/90 p-4 rounded-b-xl border-t border-amber-200">
-                    <div class="flex justify-between items-center text-xs text-amber-900 paladin-font divine-text px-4">
+                    <!-- Status Bar -->
+                    <div class="flex justify-between items-center text-xs text-amber-900 paladin-font divine-text px-2">
                         <div class="flex items-center space-x-2">
                             <i class="fas fa-microchip text-amber-700"></i>
-                            <span>DIVINE VESSEL: LLAMA3-70B</span>
+                            <span>VESSEL: LLAMA3-70B</span>
                         </div>
                         <div class="flex items-center space-x-2">
                             <i class="fas fa-stopwatch text-amber-700"></i>
-                            <span>BLESSING TIME: <span id="latency" class="font-semibold">0</span>ms</span>
+                            <span>RESPONSE TIME: <span id="latency" class="font-semibold">0</span>ms</span>
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
-    </div>
 
-    <!-- Footer -->
-    <div class="text-center mt-8 mb-6 text-sm text-amber-800 opacity-80">
-        
-        <a href="https://ko-fi.com/arcanel4bs" target="_blank" rel="noopener" class="inline-flex items-center gap-2 hover:text-amber-900 transition-colors">
-            <i class="fas fa-mug-hot"></i>
-            <span>Support this divine quest</span>
-        </a>
-        <p class="mb-3 py-4">crafted by arcanel4bs</p>
+        <!-- Footer - Fixed bottom right -->
+        <div class="fixed bottom-6 right-6 text-right z-50">
+            <div class="flex flex-col items-end space-y-2">
+                <a href="https://buymeacoffee.com/arcanel4bs" 
+                   target="_blank" 
+                   rel="noopener" 
+                   class="inline-flex items-center gap-2 text-amber-700 hover:text-amber-900 transition-colors bg-black/30 px-4 py-2 rounded-full backdrop-blur-sm hover:bg-black/40 dark:text-amber-500 dark:hover:text-amber-400">
+                    <i class="fas fa-coffee"></i>
+                    <span class="text-sm paladin-font">Buy me a coffee</span>
+                </a>
+                <p class="text-xs text-amber-600 dark:text-amber-500 opacity-80 pr-2 paladin-font">crafted by <a href="https://x.com/labsarcane" class="text-amber-600 dark:text-amber-500 hover:text-amber-900 transition-colors">arcanel4bs</a></p>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -302,35 +515,79 @@
         function addToChat(message, type) {
             const chatHistory = document.getElementById('chat-history');
             const messageDiv = document.createElement('div');
-            messageDiv.className = `p-4 rounded-lg mb-3 shadow-sm flex items-center justify-between ${
+            messageDiv.className = `p-4 rounded-lg mb-3 shadow-sm ${
                 type === 'user' ? 'bg-amber-50/90 border-l-4 border-amber-500 hover:bg-amber-50' :
                 type === 'ai' ? 'bg-gradient-to-r from-amber-50/80 to-amber-50/60 border-l-4 border-amber-400 hover:bg-amber-50/90' :
                 'bg-red-100/80 border-l-4 border-red-400'
             } transition-all duration-200`;
 
             const messageContent = document.createElement('div');
-            messageContent.className = 'flex items-center gap-3';
+            messageContent.className = `flex items-center gap-3 ${type === 'user' ? 'text-current' : ''}`;
 
             const icon = document.createElement('i');
             icon.className = type === 'user' ? 'fas fa-shield-alt text-amber-600' : 'fas fa-sword text-amber-600';
             messageContent.appendChild(icon);
 
-            const textSpan = document.createElement('span');
-            textSpan.textContent = type === 'user' ? message.replace('User: ', '') : message.replace('AI: ', '');
-            messageContent.appendChild(textSpan);
+            const textContainer = document.createElement('div');
+            textContainer.className = 'flex-grow';
+            
+            if (type === 'ai') {
+                textContainer.className += ' markdown-content';
+                let cleanMessage = message.replace('AI: ', '');
+                cleanMessage = cleanMessage.replace('Here is the formatted text in clean markdown:', '').trim();
+                
+                // Add Paladin prefix with logo
+                const paladinPrefix = '<div class="flex items-center gap-2 mb-2"><img src="/static/paladin-logo.jpg" alt="Paladin" class="w-6 h-6 rounded-full"><span class="font-bold">Paladin:</span></div>';
+                textContainer.innerHTML = paladinPrefix + marked.parse(cleanMessage);
+            } else {
+                textContainer.textContent = type === 'user' ? message.replace('User: ', '') : message;
+            }
 
+            messageContent.appendChild(textContainer);
             messageDiv.appendChild(messageContent);
             chatHistory.appendChild(messageDiv);
-            chatHistory.scrollTop = chatHistory.scrollHeight;
+            
+            const mainContent = document.querySelector('main');
+            mainContent.scrollTop = mainContent.scrollHeight;
         }
 
-        document.addEventListener('mousemove', (e) => {
-            const cursor = document.getElementById('custom-cursor');
-            if (cursor) {
-                cursor.style.left = e.clientX + 'px';
-                cursor.style.top = e.clientY + 'px';
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        
+        // Check for saved theme preference or default to light
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
             }
         });
+    </script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        silver: {
+                            400: '#C0C0C0',
+                            500: '#A9A9A9',
+                            600: '#808080',
+                        }
+                    }
+                }
+            }
+        }
     </script>
 </body>
 </html> 

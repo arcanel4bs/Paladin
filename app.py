@@ -126,20 +126,76 @@ class WorkflowState(TypedDict):
     conversation_history: str
     conversation_id: str
     decision: str
+    raw_search_results: str
+
+# Add new function for search result summarization
+def summarize_search_results(raw_results: str) -> str:
+    """Summarizes search results to extract key details."""
+    summary_prompt = ChatPromptTemplate.from_messages([
+        ("system", """As an AI assistant, extract and organize the most relevant information from these search results.
+        Include:
+        - Key facts, dates, and figures
+        - Direct quotes from reliable sources
+        - Historical context and background
+        - Current developments and implications
+        
+        Format the information in a clear, structured manner."""),
+        ("user", "{raw_results}")
+    ])
+    chain = summary_prompt | GROQ_LLM | StrOutputParser()
+    return chain.invoke({"raw_results": raw_results})
+
+# Add new formatting function after summarize_search_results
+def format_response_markdown(response: str) -> str:
+    """Formats the response in clean markdown."""
+    format_prompt = ChatPromptTemplate.from_messages([
+        ("system", """Format the given text into clean, readable markdown.
+        
+        Guidelines:
+        - Use proper heading levels (# for main title, ## for sections, etc.)
+        - Add line breaks between sections
+        - Use bullet points or numbered lists where appropriate
+        - Highlight key terms with bold or italics
+        - Use blockquotes for important quotes
+        - Add horizontal rules to separate major sections if needed
+        - Preserve all factual content - only change formatting
+        - Do not include any prefix or meta text about formatting
+        - Start directly with the content
+        
+        Example Format:
+        # Main Title
+        
+        ## Background
+        
+        Key information here...
+        """),
+        ("user", "{text}")
+    ])
+    
+    chain = format_prompt | GROQ_LLM | StrOutputParser()
+    formatted = chain.invoke({"text": response})
+    
+    # Remove any remaining formatting prefixes if they exist
+    formatted = formatted.replace('Here is the formatted text in clean markdown:', '').strip()
+    return formatted
 
 # Create prompt templates
 analysis_prompt = ChatPromptTemplate.from_messages([
     ("system", """You are a helpful AI assistant with access to web search capabilities and file upload.
-Analyze the user's input and determine if additional information from the web is needed. 
+Analyze the user's input to determine if additional information from the web is needed.
 
 Instructions:
-1. Identify the core question in the user's input.
-2. Determine if answering the question requires current or external information not provided.
-3. If so, conclude with 'Search Required: True'.
-4. If not, conclude with 'Search Required: False'.
+1. Identify the core question and its components
+2. Determine if answering requires:
+   - Current events or news
+   - Historical context
+   - Statistical data
+   - Expert opinions or quotes
+3. If any of these are needed, conclude with 'Search Required: True'
+4. If the question can be fully answered with existing context, conclude with 'Search Required: False'
 
 Output Format:
-Reasoning: [Your reasoning here]
+Analysis: [Your detailed analysis]
 Search Required: [True/False]"""),
     ("user", """Conversation History: {conversation_history}
 Current User Input: {input_text}
@@ -148,21 +204,29 @@ Web Search Results (if available): {search_results}""")
 ])
 
 response_prompt = ChatPromptTemplate.from_messages([
-    ("system", """You are a helpful AI assistant.
-When generating your response, consider the following:
-- Conversation history
-- File summary (if provided)
-- Search results (if available)
+    ("system", """You are a knowledgeable AI assistant.
+When generating your response, please:
 
-Provide clear, concise answers that directly address the user's question.
-Avoid repeating information already present in the conversation."""),
-    ("user", """Conversation History: {conversation_history}
-Based on this analysis: {intermediate_result}
+- Provide a detailed and informative answer to the user's query
+- Incorporate relevant data, figures, dates, and direct quotes from the search results
+- Offer contextual background to enhance understanding
+- Present the information in a structured and coherent manner
+- Use markdown formatting for better readability
+
+Avoid:
+- Leaving out important details
+- Repeating information unnecessarily
+- Providing personal opinions or unsupported statements"""),
+    ("user", """Conversation History:
+{conversation_history}
+
+Based on this analysis:
+{intermediate_result}
 
 Search Results:
 {search_results}
 
-Generate a helpful response that incorporates any relevant information from the search results.""")
+Generate a comprehensive response that fully addresses the user's question.""")
 ])
 
 # Define workflow nodes
@@ -209,31 +273,42 @@ def should_search(state: WorkflowState) -> WorkflowState:
     return state
 
 def perform_search(state: WorkflowState) -> WorkflowState:
-    """Performs web search if needed"""
+    """Performs web search, summarizes results, and updates state."""
     try:
         logger.info(f"Performing search for: {state['input_text']}")
-        search_results = search_tool.run(state["input_text"])
-        state['search_results'] = search_results
-        logger.info(f"Search Results: {search_results[:200]}...")  # Log first 200 chars
+        raw_results = search_tool.run(state["input_text"])
+        state['raw_search_results'] = raw_results
+        
+        # Summarize the raw results
+        summarized_results = summarize_search_results(raw_results)
+        state['search_results'] = summarized_results
+        
+        logger.info(f"Raw Search Results: {raw_results[:200]}...")
+        logger.info(f"Summarized Results: {summarized_results[:200]}...")
         
     except Exception as e:
         logger.error(f"Search error: {e}")
+        state['raw_search_results'] = "Search unavailable"
         state['search_results'] = "Search unavailable"
     return state
 
 def generate_output(state: WorkflowState) -> WorkflowState:
-    """Generates the final response."""
+    """Generates the final, detailed response."""
     try:
-        logger.info("Generating final response")
+        logger.info("Generating final detailed response")
+        # Generate initial response
         chain = response_prompt | GROQ_LLM | StrOutputParser()
-        result = chain.invoke({
+        initial_result = chain.invoke({
             "intermediate_result": state["intermediate_result"],
             "conversation_history": state["conversation_history"],
             "file_summary": state.get("file_summary", ""),
-            "search_results": state.get("search_results", "")
+            "search_results": state.get("search_results", ""),
         })
-        state['final_result'] = result
-        logger.info(f"Generated response: {result[:200]}...")  # Log first 200 chars
+        
+        # Format the response in markdown
+        formatted_result = format_response_markdown(initial_result)
+        state['final_result'] = formatted_result
+        logger.info(f"Generated formatted response: {formatted_result[:200]}...")
         
     except Exception as e:
         logger.error(f"Error in generate_output: {e}")
@@ -376,6 +451,7 @@ def chat():
         user_input=user_input,
         ai_response=output["final_result"],
         search_results=output.get("search_results", ""),
+        raw_search_results=output.get("raw_search_results", ""),
         file_content=file_content,
         file_name=file_name,
         file_summary=file_summary,

@@ -8,6 +8,7 @@ class ChatMessage(db.Model):
     user_input = db.Column(db.Text, nullable=False)
     ai_response = db.Column(db.Text, nullable=False)
     search_results = db.Column(db.Text)
+    raw_search_results = db.Column(db.Text)
     file_content = db.Column(db.Text)
     file_name = db.Column(db.String(255))
     file_summary = db.Column(db.Text)
@@ -21,6 +22,7 @@ class ChatMessage(db.Model):
             'user_input': self.user_input,
             'ai_response': self.ai_response,
             'search_results': self.search_results,
+            'raw_search_results': self.raw_search_results,
             'file_name': self.file_name,
             'file_summary': self.file_summary,
             'latency': self.latency,

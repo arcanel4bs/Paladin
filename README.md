@@ -1,107 +1,108 @@
-# Paladin - Open-Source Perplexity Alternative
+# Paladin - Open-Source Web Search Assistant
 
-## Overview
-Paladin is a noble AI assistant that combines the **divine power of Llama 3 (70B)** with sacred **knowledge-seeking through LangGraph** workflows, allowing it to **seek wisdom for you through the DuckDuckGo oracle**. It features a radiant, holy chamber interface designed for enlightened human-AI interaction.
+## The Legend
+Paladin is your trusted AI search assistant, a noble assistant combining the **mighty power of Llama 3 (70B)** with the **ancient arts of knowledge-seeking** through LangGraph workflows. Like a faithful squire, it ventures forth through the vast realms of DuckDuckGo to gather wisdom and knowledge for your quests.
 
-## Features
-- ⚔️ **Divine LLM Integration**: Powered by Llama 3 70B through Groq's API
-- 📜 **Sacred Knowledge Search**: Real-time DuckDuckGo search capabilities
-- 📖 **Tome Analysis**: Upload `.txt`, `.pdf`, `.doc`, and `.docx` files for divine interpretation
-- ✨ **Blessed Workflow**: Multi-step processing for enhanced wisdom
-- 🏰 **Holy Chamber UI**: Celestial-inspired interface with divine status indicators
-- 🌟 **Divine Metrics**: Built-in blessing tracking and sacred status monitoring
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support%20the%20Project-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/arcanel4bs)
+
+## Arsenal of Powers
+- ⚔️ **Mighty LLM Core**: Powered by Llama 3 70B through Groq's API
+- 🗺️ **Knowledge Questing**: Real-time exploration through DuckDuckGo
+- 📜 **Scroll Analysis**: Interprets `.txt`, `.pdf`, `.doc`, and `.docx` manuscripts
+- ⚡ **Strategic Workflow**: Multi-step processing for enhanced intelligence
+- 🏰 **Noble Interface**: Medieval-inspired design with status indicators
+- ⚜️ **Quest Metrics**: Built-in performance tracking and status monitoring
 
 ![Paladin Interface](/public/paladin-demo.png)
 
+## Arsenal Components
+- **Stronghold**: TailwindCSS, Animated Interface
+- **Keep**: Flask, SQLite, LangChain, LangGraph
+- **Armory**: Groq (Llama 3 70B) & Gemini (2.0 flash)
+- **Scout**: DuckDuckGo Search API
+- **Library**: Support for text, PDF, and Word manuscripts
 
-## Technical Stack
-- **Frontend**: TailwindCSS, Divine CSS Animations
-- **Backend**: Flask, SQLite, LangChain, LangGraph
-- **LLM**: Groq (Llama 3 70B) & Gemini (2.0 flash)
-- **Web Indexing**: DuckDuckGo Search API
-- **File Uploads Processing**: Supports text, PDF, and Word documents
+## Joining the Quest
 
-## Getting Started
-
-### Prerequisites
+### Requirements
 - Python 3.8+
 - Groq API Key
-- Google Gemini API Key (for interpreting lengthy scrolls)
+- Google Gemini API Key (for lengthy manuscripts)
 - DuckDuckGo Search capabilities
 
-### Installation
-1. Clone the sacred repository:
+### Establishing Your Stronghold
+1. Clone the repository:
 ```bash
 git clone https://github.com/arcanel4bs/Paladin.git
 cd paladin
 ```
 
-2. Install the divine requirements:
+2. Equip your arsenal:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Set up your sacred seals (environment variables):
+3. Set up your credentials:
 ```bash
 GROQ_API_KEY=your_groq_api_key
 GEMINI_API_KEY=your_gemini_api_key
 LANGCHAIN_API_KEY=your_langchain_api_key
 ```
 
-4. Consecrate the database:
+4. Prepare your stronghold:
 ```bash
 flask db upgrade
 ```
 
-5. Invoke the divine interface:
+5. Summon your Paladin:
 ```bash
 python app.py
 ```
 
-6. Access the holy chamber:
+6. Enter the grand hall:
    Open your browser and navigate to `http://127.0.0.1:5000`
 
-## Divine Workflow
-The application employs a blessed multi-stage workflow:
+## Quest Workflow
+Your Paladin follows a strategic approach to each quest:
 
-1. **Prayer Processing**:
-   - Interprets user supplications and analyzes uploaded scrolls
-   - Determines if sacred knowledge seeking is required
+1. **Quest Analysis**:
+   - Interprets your inquiries and analyzes provided manuscripts
+   - Determines if knowledge seeking is required
 
-2. **Divine Branching**:
-   - Seeks additional wisdom through the DuckDuckGo oracle if needed
-   - Distills gathered knowledge into divine insights
+2. **Strategic Planning**:
+   - Ventures forth through DuckDuckGo if additional knowledge is needed
+   - Distills gathered information into valuable insights
 
-3. **Blessed Response**:
-   - Channels responses using:
-     - Prayer history
-     - Scroll interpretations
-     - Oracle's wisdom
+3. **Noble Response**:
+   - Crafts responses using:
+     - Quest history
+     - Manuscript analysis
+     - Gathered knowledge
 
-## Scroll Processing
+## Manuscript Processing
 
-- **Sacred Formats**: `.txt`, `.pdf`, `.doc`, `.docx`
-- **Divine Processing**:
+- **Supported Formats**: `.txt`, `.pdf`, `.doc`, `.docx`
+- **Processing Methods**:
   - **Text Scrolls**: Direct interpretation
-  - **PDF Tomes**: Extract wisdom using `PyPDF2`
-  - **Word Scrolls**: Extract knowledge using `python-docx`
-- **Sacred Synthesis**:
-  - **Brief Scrolls**: Interpreted by Groq LLM
-  - **Ancient Tomes**: Interpreted by Google Gemini for divine efficiency
+  - **PDF Tomes**: Extract content using `PyPDF2`
+  - **Word Chronicles**: Extract content using `python-docx`
+- **Strategic Analysis**:
+  - **Brief Texts**: Processed by Groq LLM
+  - **Lengthy Tomes**: Processed by Google Gemini for efficiency
 
-## Holy Chamber Features
-- Divine response timing
-- Blessed status indicators
-- Celestial background
-- Sacred scrollbars
-- Responsive holy chamber
-- Divine shortcuts (Enter to invoke)
+## Interface Features
+- Response timing
+- Status indicators
+- Themed background
+- Custom scrollbars
+- Responsive design
+- Quick commands (Enter to send)
 
-## Contributing
-Contributions to this sacred project are welcome! Please submit your divine Pull Requests.
+## Join the Guild
+Contributions to this noble quest are welcome! Please submit your Pull Requests.
 
-## License
-This holy project is blessed under the MIT License - see the LICENSE scroll for details.
+## Charter
+This project operates under the MIT License - see the LICENSE file for details.
 ```
 
 
