@@ -32,7 +32,7 @@ Paladin is a noble AI assistant that combines the **divine power of Llama 3 (70B
 ### Installation
 1. Clone the sacred repository:
 ```bash
-git clone https://github.com/arcanel4bs/paladin.git
+git clone https://github.com/arcanel4bs/Paladin.git
 cd paladin
 ```
 
