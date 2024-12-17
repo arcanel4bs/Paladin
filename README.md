@@ -1,4 +1,4 @@
-# Paladin - Divine AI Knowledge Interface
+# Paladin - Open-Source Perplexity Alternative
 
 ![Paladin Interface](/public/paladin-demo.png)
 
