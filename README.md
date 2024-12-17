@@ -3,6 +3,8 @@
 ## The Legend
 Paladin is your trusted AI search assistant, a noble assistant combining the **mighty power of Llama 3 (70B)** with the **ancient arts of knowledge-seeking** through LangGraph workflows. Like a faithful squire, it ventures forth through the vast realms of DuckDuckGo to gather wisdom and knowledge for your quests.
 
+🎥 [Watch Demo Video](https://youtu.be/daFfsu8CVFI?si=APeEAiqikMgiTu21)
+
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support%20the%20Project-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/arcanel4bs)
 
 ## Arsenal of Powers
