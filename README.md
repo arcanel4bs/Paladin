@@ -1,7 +1,7 @@
 # Paladin - Open-Source Perplexity Alternative
 
 ## Overview
-Paladin is a noble AI assistant that combines the divine power of Llama 3 (70B) with sacred knowledge seeking through LangGraph workflows allows it to seek winsdom for you with the DuckDuckGo oracle. It features a radiant, holy chamber interface designed for enlightened human-AI interaction.
+Paladin is a noble AI assistant that combines the **divine power of Llama 3 (70B)** with sacred **knowledge-seeking through LangGraph** workflows, allowing it to **seek wisdom for you through the DuckDuckGo oracle**. It features a radiant, holy chamber interface designed for enlightened human-AI interaction.
 
 ## Features
 - ⚔️ **Divine LLM Integration**: Powered by Llama 3 70B through Groq's API
