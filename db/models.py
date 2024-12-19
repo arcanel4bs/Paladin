@@ -4,6 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 class ChatMessage(db.Model):
+    __tablename__ = 'chat_messages'
+    
     id = db.Column(db.Integer, primary_key=True)
     user_input = db.Column(db.Text, nullable=False)
     ai_response = db.Column(db.Text, nullable=False)
@@ -15,6 +17,8 @@ class ChatMessage(db.Model):
     latency = db.Column(db.Float)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     conversation_id = db.Column(db.String(36), nullable=False)
+
+    __table_args__ = {'extend_existing': True}
 
     def to_dict(self):
         return {

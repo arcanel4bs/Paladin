@@ -390,13 +390,6 @@
                                    id="user-input" 
                                    class="w-full pl-4 pr-12 py-4 divine-scroll border-2 border-amber-400/40 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-400/30 text-amber-900 font-sans shadow-inner transition-all duration-200"
                                    placeholder="Seek divine wisdom...">
-                            <label class="file-upload absolute right-4 cursor-pointer">
-                                <i class="fas fa-scroll text-amber-700 hover:text-amber-600 transition-colors"></i>
-                                <input type="file" 
-                                       id="file-upload" 
-                                       class="hidden"
-                                       accept=".txt,.pdf,.doc,.docx">
-                            </label>
                         </div>
                         <button type="submit" 
                                 class="px-8 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-lg transition-all duration-200 paladin-font shadow-lg hover:shadow-xl flex items-center space-x-2">
@@ -435,120 +428,119 @@
     </div>
 
     <script>
-        let startTime;
-        let conversation_id = null;
+        let currentConversationId = null;
 
-        // Remove the old file upload button listener since we're using a label
-        document.getElementById('file-upload').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name;
-            const fileNameSpan = document.getElementById('file-name');
-            if (fileNameSpan) {
-                fileNameSpan.textContent = fileName || '';
-            }
-        });
-
-        // Update form submission handling
-        document.getElementById('chat-form').addEventListener('submit', async function(e) {
-            e.preventDefault();  // Prevent form submission
-            await sendMessage();
-        });
-
-        async function sendMessage() {
-            const input = document.getElementById('user-input');
-            const fileInput = document.getElementById('file-upload');
-            const message = input.value.trim();
-            const file = fileInput.files[0];
-
-            if (!message && !file) return;
-
-            const formData = new FormData();
-            if (message) {
-                formData.append('message', message);
-                addToChat('User: ' + message, 'user');
-                input.value = '';
-            }
-
-            if (file) {
-                formData.append('file', file);
-                addToChat('User: [Uploaded file: ' + file.name + ']', 'user');
-                fileInput.value = '';
-                const fileNameSpan = document.getElementById('file-name');
-                if (fileNameSpan) {
-                    fileNameSpan.textContent = '';
-                }
-            }
-
-            if (conversation_id) {
-                formData.append('conversation_id', conversation_id);
-            }
-
-            startTime = Date.now();
-
-            try {
-                const response = await fetch('/chat', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                conversation_id = data.conversation_id;
-
-                const latency = Date.now() - startTime;
-                document.getElementById('latency').textContent = latency;
-
-                if (data.file_summary) {
-                    addToChat('AI: [File Summary] ' + data.file_summary, 'ai');
-                }
-                if (data.response) {
-                    addToChat('AI: ' + data.response, 'ai');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                addToChat('Error: Divine connection interrupted', 'error');
-            }
-        }
-
-        function addToChat(message, type) {
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatForm = document.getElementById('chat-form');
+            const userInput = document.getElementById('user-input');
             const chatHistory = document.getElementById('chat-history');
+
+            if (!chatForm || !userInput || !chatHistory) {
+                console.error('Required DOM elements not found!');
+                return;
+            }
+
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const message = userInput.value.trim();
+                if (!message) return;
+
+                // Add user message to chat
+                appendMessage('User', message);
+                userInput.value = '';
+
+                try {
+                    const formData = new FormData();
+                    formData.append('message', message);
+                    if (currentConversationId) {
+                        formData.append('conversation_id', currentConversationId);
+                    }
+
+                    const startTime = Date.now();
+                    const response = await fetch('/chat', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('Server response:', data);
+
+                    if (data.error) {
+                        console.error('Server error:', data.error);
+                        appendMessage('Error', data.error);
+                    } else {
+                        currentConversationId = data.conversation_id;
+                        
+                        if (data.response) {
+                            console.log('AI response:', data.response);
+                            appendMessage('Assistant', data.response);
+                        }
+
+                        // Update latency
+                        const latency = Date.now() - startTime;
+                        const latencyElement = document.getElementById('latency');
+                        if (latencyElement) {
+                            latencyElement.textContent = Math.round(latency);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    appendMessage('Error', 'Failed to send message. Please try again.');
+                }
+            });
+        });
+
+        function appendMessage(sender, content) {
+            const chatHistory = document.getElementById('chat-history');
+            if (!chatHistory) {
+                console.error('Chat history element not found');
+                return;
+            }
+
+            console.log('Appending message:', { sender, content });
+
             const messageDiv = document.createElement('div');
             messageDiv.className = `p-4 rounded-lg mb-3 shadow-sm ${
-                type === 'user' ? 'bg-amber-50/90 border-l-4 border-amber-500 hover:bg-amber-50' :
-                type === 'ai' ? 'bg-gradient-to-r from-amber-50/80 to-amber-50/60 border-l-4 border-amber-400 hover:bg-amber-50/90' :
+                sender === 'User' ? 'bg-amber-50/90 border-l-4 border-amber-500 hover:bg-amber-50' :
+                sender === 'Assistant' ? 'bg-gradient-to-r from-amber-50/80 to-amber-50/60 border-l-4 border-amber-400 hover:bg-amber-50/90' :
                 'bg-red-100/80 border-l-4 border-red-400'
             } transition-all duration-200`;
 
             const messageContent = document.createElement('div');
-            messageContent.className = `flex items-center gap-3 ${type === 'user' ? 'text-current' : ''}`;
+            messageContent.className = 'flex items-center gap-3';
 
             const icon = document.createElement('i');
-            icon.className = type === 'user' ? 'fas fa-shield-alt text-amber-600' : 'fas fa-sword text-amber-600';
+            icon.className = sender === 'User' ? 'fas fa-shield-alt text-amber-600' : 'fas fa-sword text-amber-600';
             messageContent.appendChild(icon);
 
             const textContainer = document.createElement('div');
-            textContainer.className = 'flex-grow';
+            textContainer.className = 'flex-grow markdown-content';
             
-            if (type === 'ai') {
-                textContainer.className += ' markdown-content';
-                let cleanMessage = message.replace('AI: ', '');
-                cleanMessage = cleanMessage.replace('Here is the formatted text in clean markdown:', '').trim();
-                
-                // Add Paladin prefix with logo
-                const paladinPrefix = '<div class="flex items-center gap-2 mb-2"><img src="/static/paladin-logo.jpg" alt="Paladin" class="w-6 h-6 rounded-full"><span class="font-bold">Paladin:</span></div>';
-                textContainer.innerHTML = paladinPrefix + marked.parse(cleanMessage);
-            } else {
-                textContainer.textContent = type === 'user' ? message.replace('User: ', '') : message;
+            try {
+                if (sender === 'Assistant') {
+                    const paladinPrefix = '<div class="flex items-center gap-2 mb-2">' +
+                        '<img src="/static/paladin-logo.jpg" alt="Paladin" class="w-6 h-6 rounded-full">' +
+                        '<span class="font-bold paladin-font">Paladin:</span></div>';
+                    
+                    textContainer.innerHTML = paladinPrefix + marked.parse(content);
+                    console.log('Parsed markdown content:', textContainer.innerHTML);
+                } else {
+                    textContainer.textContent = content;
+                }
+            } catch (error) {
+                console.error('Error parsing markdown:', error);
+                textContainer.textContent = content;
             }
-
+            
             messageContent.appendChild(textContainer);
             messageDiv.appendChild(messageContent);
             chatHistory.appendChild(messageDiv);
             
-            const mainContent = document.querySelector('main');
-            mainContent.scrollTop = mainContent.scrollHeight;
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }
 
         // Theme toggle functionality

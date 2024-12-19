@@ -11,6 +11,7 @@ langraph_groq_example.txt
 
 # Python cache files
 __pycache__/
+*.pyc
 *.py[cod]
 *$py.class
 
@@ -47,3 +48,7 @@ htmlcov/
 # Logs
 *.log
 logs/
+
+# Uploads
+uploads/
+*.db

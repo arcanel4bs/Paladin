@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -8,18 +8,18 @@ from typing import Dict, Any
 import os
 from dotenv import load_dotenv
 from langchain_community.tools import DuckDuckGoSearchRun
-from db.models import db, ChatMessage
+from werkzeug.utils import secure_filename
 import time
 from uuid import uuid4
 import json
-from werkzeug.utils import secure_filename
-import hashlib
-from flask_migrate import Migrate
-import google.generativeai as genai
-import tiktoken
-import logging
 from PyPDF2 import PdfReader
 from docx import Document
+from collections import deque
+import threading
+import logging
+import google.generativeai as genai
+import tiktoken
+import hashlib
 
 load_dotenv()
 
@@ -27,23 +27,36 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
+def safe_remove_file(filepath):
+    """Safely remove a file if it exists"""
+    try:
+        if os.path.exists(filepath):
+            os.remove(filepath)
+    except Exception as e:
+        logger.error(f"Error removing file {filepath}: {e}")
 
-# Configure SQLite database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat_history.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+def cleanup_upload_folder():
+    """Clean up any leftover files in the upload folder"""
+    try:
+        if os.path.exists(app.config['UPLOAD_FOLDER']):
+            for filename in os.listdir(app.config['UPLOAD_FOLDER']):
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                safe_remove_file(filepath)
+    except Exception as e:
+        logger.error(f"Error cleaning upload folder: {e}")
+
+app = Flask(__name__, static_folder='static')
+
+# Configure app settings
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}
 
-# Ensure upload folder exists
+# Ensure upload folder exists and is clean
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+cleanup_upload_folder()
 
-db.init_app(app)
-migrate = Migrate(app, db)
-
-# Initialize tools
-search_tool = DuckDuckGoSearchRun()
+DEBUG_MODE = os.getenv('DEBUG_MODE', 'False').lower() == 'true'
 
 # Initialize the Groq LLM
 GROQ_LLM = ChatGroq(
@@ -58,7 +71,13 @@ genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 # Simple in-memory cache for file summaries
 file_cache = {}
 
-DEBUG_MODE = os.getenv('DEBUG_MODE', 'False').lower() == 'true'
+# Initialize conversation cache
+conversation_cache = {}
+MAX_CONVERSATIONS = 10
+cache_lock = threading.Lock()
+
+# Initialize tools
+search_tool = DuckDuckGoSearchRun()
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -351,19 +370,52 @@ workflow.set_entry_point("process_input")
 # Compile the workflow
 app_workflow = workflow.compile()
 
+def cleanup_old_conversations():
+    """Remove old conversations if cache exceeds maximum size"""
+    with cache_lock:
+        if len(conversation_cache) > MAX_CONVERSATIONS:
+            sorted_convos = sorted(conversation_cache.items(), 
+                                 key=lambda x: x[1]['timestamp'])
+            to_remove = len(conversation_cache) - MAX_CONVERSATIONS
+            for i in range(to_remove):
+                del conversation_cache[sorted_convos[i][0]]
+
+def cache_conversation(conversation_id: str, message_data: dict):
+    """Cache conversation with timestamp"""
+    with cache_lock:
+        if conversation_id not in conversation_cache:
+            conversation_cache[conversation_id] = {
+                'messages': deque(maxlen=5),
+                'timestamp': time.time()
+            }
+        conversation_cache[conversation_id]['messages'].append(message_data)
+        cleanup_old_conversations()
+
 def get_conversation_history(conversation_id):
-    messages = ChatMessage.query.filter_by(conversation_id=conversation_id)\
-        .order_by(ChatMessage.timestamp.desc())\
-        .limit(5)\
-        .all()
+    """Get conversation history from cache"""
+    if conversation_id not in conversation_cache:
+        return ""
     
     history = []
-    for msg in reversed(messages):
+    for msg in conversation_cache[conversation_id]['messages']:
         history.extend([
-            f"User: {msg.user_input}",
-            f"Assistant: {msg.ai_response}"
+            f"User: {msg['user_input']}",
+            f"Assistant: {msg['ai_response']}"
         ])
     return "\n".join(history)
+
+def safe_workflow_invoke(inputs: Dict) -> Dict:
+    """Safely invoke the workflow with error handling"""
+    try:
+        return app_workflow.invoke(inputs)
+    except Exception as e:
+        logger.error(f"Workflow error: {e}")
+        return {
+            "final_result": "I apologize, but I encountered an error processing your request.",
+            "intermediate_result": str(e),
+            "decision": "error",
+            "search_results": ""
+        }
 
 @app.route('/')
 def home():
@@ -371,119 +423,95 @@ def home():
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    user_input = request.form.get('message', '')
-    conversation_id = request.form.get('conversation_id')
-    if not conversation_id:
-        conversation_id = str(uuid4())
-    
-    file_content = ""
-    file_name = ""
-    file_summary = ""
-    
-    if 'file' in request.files:
-        file = request.files['file']
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            
-            try:
-                file_content = ''
-                file_name = filename
-                extension = os.path.splitext(filename)[1].lower()
+    try:
+        user_input = request.form.get('message', '')
+        if not user_input:
+            return jsonify({"error": "No message provided"}), 400
 
-                if extension == '.txt':
-                    with open(filepath, 'r', encoding='utf-8') as f:
-                        file_content = f.read()
-                elif extension == '.pdf':
-                    reader = PdfReader(filepath)
-                    for page in reader.pages:
-                        text = page.extract_text()
-                        if text:
-                            file_content += text
-                elif extension in ['.doc', '.docx']:
-                    doc = Document(filepath)
-                    for para in doc.paragraphs:
-                        file_content += para.text + '\n'
-                else:
-                    logger.warning(f"Unsupported file type: {extension}")
-                    file_content = None
+        conversation_id = request.form.get('conversation_id')
+        if not conversation_id:
+            conversation_id = str(uuid4())
 
-                if file_content and file_content.strip():
-                    file_summary = cache_file_content(file_content)
-                else:
-                    file_summary = "Could not read the file content."
+        start_time = time.time()
 
-            except Exception as e:
-                logger.error(f"Error processing file: {e}")
-                file_summary = "Could not process the file."
-            finally:
-                # Clean up the uploaded file
-                if os.path.exists(filepath):
-                    os.remove(filepath)
-    
-    if not user_input and not file_content:
-        return jsonify({"error": "No message or file provided"}), 400
+        # Get conversation history
+        conversation_history = get_conversation_history(conversation_id)
 
-    start_time = time.time()
-    
-    # Get conversation history
-    conversation_history = get_conversation_history(conversation_id)
-    
-    # Run the workflow
-    inputs = {
-        "input_text": user_input,
-        "file_content": "",
-        "file_summary": file_summary,
-        "search_results": "",
-        "intermediate_result": "",
-        "conversation_history": conversation_history,
-        "conversation_id": conversation_id
-    }
-    
-    output = app_workflow.invoke(inputs)
-    
-    # Calculate latency
-    latency = (time.time() - start_time) * 1000
-    
-    # Store in database
-    chat_message = ChatMessage(
-        user_input=user_input,
-        ai_response=output["final_result"],
-        search_results=output.get("search_results", ""),
-        raw_search_results=output.get("raw_search_results", ""),
-        file_content=file_content,
-        file_name=file_name,
-        file_summary=file_summary,
-        latency=latency,
-        conversation_id=conversation_id
-    )
-    db.session.add(chat_message)
-    db.session.commit()
-    
-    response_data = {
-        "response": output["final_result"],
-        "file_summary": file_summary if file_summary else None,
-        "latency": latency,
-        "conversation_id": conversation_id
-    }
-    
-    # Add debug information if DEBUG_MODE is enabled
-    if DEBUG_MODE:
-        response_data.update({
-            "debug": {
-                "intermediate_result": output.get("intermediate_result", ""),
-                "search_decision": output.get("decision", ""),
-                "search_results": output.get("search_results", ""),
-            }
-        })
-    
-    return jsonify(response_data)
+        # Run the workflow
+        inputs = {
+            "input_text": user_input,
+            "file_content": "",
+            "file_summary": "",
+            "search_results": "",
+            "intermediate_result": "",
+            "conversation_history": conversation_history,
+            "conversation_id": conversation_id,
+            "decision": "",
+            "raw_search_results": "",
+            "final_result": ""
+        }
+
+        output = safe_workflow_invoke(inputs)
+        
+        if not output.get("final_result"):
+            logger.error("No response generated")
+            return jsonify({"error": "No response generated"}), 500
+
+        # Calculate latency
+        latency = (time.time() - start_time) * 1000
+
+        # Return response with debug information
+        response_data = {
+            "status": "success",
+            "response": output["final_result"],
+            "conversation_id": conversation_id,
+            "latency": latency
+        }
+
+        if DEBUG_MODE:
+            response_data.update({
+                "debug": {
+                    "intermediate_result": output.get("intermediate_result", ""),
+                    "search_decision": output.get("decision", ""),
+                    "search_results": output.get("search_results", ""),
+                }
+            })
+
+        return jsonify(response_data)
+
+    except Exception as e:
+        logger.error(f"Chat error: {str(e)}", exc_info=True)
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "conversation_id": conversation_id if 'conversation_id' in locals() else None
+        }), 500
 
 @app.route('/history', methods=['GET'])
 def get_history():
-    messages = ChatMessage.query.order_by(ChatMessage.timestamp.desc()).limit(50).all()
-    return jsonify([message.to_dict() for message in messages])
+    with cache_lock:
+        history = []
+        for conv_id, conv_data in conversation_cache.items():
+            for msg in conv_data['messages']:
+                history.append({
+                    'user_input': msg['user_input'],
+                    'ai_response': msg['ai_response'],
+                    'timestamp': msg['timestamp']
+                })
+        return jsonify(sorted(history, key=lambda x: x['timestamp'], reverse=True)[:50])
+
+@app.route('/static/<path:path>')
+def serve_static(path):
+    return send_from_directory('static', path)
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                             'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+@app.route('/static/js/chat.js')
+def serve_chat_js():
+    return send_from_directory('static/js', 'chat.js')
 
 if __name__ == '__main__':
     app.run(debug=True)
