@@ -17,7 +17,6 @@ from docx import Document
 from collections import deque
 import threading
 import logging
-import google.generativeai as genai
 import tiktoken
 import hashlib
 
@@ -65,9 +64,6 @@ GROQ_LLM = ChatGroq(
     api_key=os.getenv('GROQ_API_KEY')
 )
 
-# Initialize Gemini API client
-genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-
 # Simple in-memory cache for file summaries
 file_cache = {}
 
@@ -94,11 +90,8 @@ def cache_file_content(file_content):
         if file_hash in file_cache:
             return file_cache[file_hash]
         
-        # Use token count instead of word count for model selection
-        if calculate_token_count(file_content) > 1000:
-            summary = summarize_file_with_gemini(file_content)
-        else:
-            summary = summarize_file_content(file_content)
+        # Always use Groq LLM for summarization
+        summary = summarize_file_content(file_content)
 
         if summary and summary.strip():
             file_cache[file_hash] = summary
@@ -110,29 +103,16 @@ def cache_file_content(file_content):
         return "Error processing file content."
 
 def summarize_file_content(file_content):
-    # Existing summarization using Groq LLM
+    """Summarize content using Groq LLM"""
     summary_prompt = ChatPromptTemplate.from_messages([
-        ("system", "Summarize the following content concisely:"),
+        ("system", """Summarize the following content concisely and effectively.
+        Focus on key points and maintain important details while reducing length.
+        Ensure the summary is clear and well-structured."""),
         ("user", "{file_content}")
     ])
     chain = summary_prompt | GROQ_LLM | StrOutputParser()
     summary = chain.invoke({"file_content": file_content})
     return summary
-
-def summarize_file_with_gemini(file_content):
-    try:
-        prompt = f"Summarize the following content concisely:\n\n{file_content}"
-        response = genai.generate_text(
-            model="models/chat-bison-001",
-            prompt=prompt,
-            temperature=0.5,
-            max_output_tokens=512,
-        )
-        summary = response.result
-        return summary
-    except Exception as e:
-        print(f"Error summarizing with Gemini: {e}")
-        return "Could not summarize the file content."
 
 # Define our workflow state
 class WorkflowState(TypedDict):

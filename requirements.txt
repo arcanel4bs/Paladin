@@ -1,3 +1,13 @@
 flask
+langchain-groq
+langchain-core
+langchain-community
+langgraph
 python-dotenv
+duckduckgo-search
+tiktoken
 werkzeug
+PyPDF2
+python-docx
+gunicorn
+typing-extensions

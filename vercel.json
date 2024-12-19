@@ -6,11 +6,15 @@
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "250mb",
-        "installCommand": "bash ./build.sh"
+        "runtime": "python3.12.4"
       }
     }
   ],
   "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
     {
       "src": "/(.*)",
       "dest": "app.py"
