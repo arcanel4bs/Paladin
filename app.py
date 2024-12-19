@@ -399,7 +399,15 @@ def safe_workflow_invoke(inputs: Dict) -> Dict:
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        logger.error(f"Error rendering home page: {e}")
+        return jsonify({
+            "status": "error",
+            "message": "Error loading application",
+            "error": str(e)
+        }), 500
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -482,16 +490,24 @@ def get_history():
 
 @app.route('/static/<path:path>')
 def serve_static(path):
-    return send_from_directory('static', path)
+    try:
+        return send_from_directory('static', path)
+    except Exception as e:
+        logger.error(f"Error serving static file {path}: {e}")
+        return jsonify({"error": "File not found"}), 404
 
-@app.route('/favicon.ico')
-def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'),
-                             'favicon.ico', mimetype='image/vnd.microsoft.icon')
+@app.errorhandler(Exception)
+def handle_exception(e):
+    logger.error(f"Unhandled exception: {str(e)}", exc_info=True)
+    return jsonify({
+        "status": "error",
+        "message": "Internal server error",
+        "error": str(e)
+    }), 500
 
-@app.route('/static/js/chat.js')
-def serve_chat_js():
-    return send_from_directory('static/js', 'chat.js')
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "healthy"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
