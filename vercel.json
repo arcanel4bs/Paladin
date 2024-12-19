@@ -6,8 +6,12 @@
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "250mb",
-        "runtime": "python3.12.4"
+        "runtime": "python3.12"
       }
+    },
+    {
+      "src": "static/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
