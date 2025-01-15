@@ -1,4 +1,4 @@
-# Paladin - Web Search Assistant
+# Paladin - AI Web Search Assistant
 
 ## The Legend
 Paladin is your trusted AI search assistant, a noble assistant combining the **mighty power of Llama 3 (70B)** with the **ancient arts of knowledge-seeking** through LangGraph workflows. Like a faithful squire, it ventures forth through the vast realms of DuckDuckGo to gather wisdom and knowledge for your quests.
